@@ -651,4 +651,4 @@ SOFTWARE.
 
 ---
 
-→ **n8n Workflow Automation Pack**: <!-- GUMROAD-LINK -->
+→ **[n8n Workflow Automation Pack](https://duke5am.gumroad.com/l/06-n8n-automation-pack)** — $29 on Gumroad <!-- GUMROAD-LINK -->
