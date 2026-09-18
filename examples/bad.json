@@ -1,0 +1,329 @@
+{
+  "name": "Stripe Orders To Sheets (messy example)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-orders",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000001",
+      "name": "Stripe Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "0f1a2b3c-0002-4000-8000-0000000000a1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-orders",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000002",
+      "name": "Stripe Webhook Copy",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ],
+      "webhookId": "0f1a2b3c-0002-4000-8000-0000000000a2"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1",
+              "name": "order_id",
+              "value": "={{ $json.order_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000003",
+      "name": "Normalise Order",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.example.com/enrich?api_key=n8n-lint-fixture-key-0001",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer n8n-lint-fixture-token-0001"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $json.order_id, customer: $json.customer_email }) }}",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000004",
+      "name": "Enrich Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Enrichment API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "n8n-lint-fixture-sheet-id",
+          "mode": "id"
+        },
+        "sheetName": "Orders",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_id": "={{ $json.order_id }}",
+            "email": "={{ $json.customer_email }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000005",
+      "name": "Write To Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "11",
+          "name": "Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "old_rows",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000006",
+      "name": "Log Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        240
+      ],
+      "disabled": true,
+      "credentials": {
+        "postgres": {
+          "id": "3",
+          "name": "Reporting DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nfor (const item of items) {\n  item.json.attempts = (item.json.attempts || 0) + 1;\n}\nreturn items;\n"
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000007",
+      "name": "Retry Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C00000000",
+          "mode": "list"
+        },
+        "text": "=Order {{ $json.order_id }} written",
+        "otherOptions": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000008",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "7",
+          "name": "Slack Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.example.com/archive",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-000000000009",
+      "name": "Archive Old Rows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.order_id }}",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0002-4000-8000-00000000000a",
+      "name": "Cleanup Duplicates",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        220,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Stripe Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalise Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Order": {
+      "main": [
+        [
+          {
+            "node": "Enrich Order",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Order": {
+      "main": [
+        [
+          {
+            "node": "Write To Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write To Sheets": {
+      "main": [
+        [
+          {
+            "node": "Retry Logic",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Failure": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Logic": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack": {
+      "main": [
+        [
+          {
+            "node": "Retry Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Normalise Order": [
+      {
+        "json": {
+          "order_id": "TEST-ORDER-1"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "0f1a2b3c-0002-4000-8000-00000000cafe",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

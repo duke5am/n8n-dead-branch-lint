@@ -1,0 +1,238 @@
+{
+  "name": "Invoice Approval (clean example)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoice-received",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0001-4000-8000-000000000001",
+      "name": "Invoice Received",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        0
+      ],
+      "webhookId": "0f1a2b3c-0001-4000-8000-0000000000a1"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "order_id",
+              "value": "={{ $json.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "amount",
+              "value": "={{ $json.amount }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0f1a2b3c-0001-4000-8000-000000000002",
+      "name": "Normalise Invoice",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -40,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.amount }}",
+              "rightValue": 1000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0f1a2b3c-0001-4000-8000-000000000003",
+      "name": "Amount Over Threshold",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.example.com/invoices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ order_id: $json.order_id, amount: $json.amount }) }}",
+        "options": {}
+      },
+      "id": "0f1a2b3c-0001-4000-8000-000000000004",
+      "name": "Post To Accounting",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        420,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "42",
+          "name": "Accounting API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "0f1a2b3c-0001-4000-8000-000000000005",
+      "name": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3",
+              "name": "skipped_reason",
+              "value": "under_threshold",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0f1a2b3c-0001-4000-8000-000000000006",
+      "name": "Record As Skipped",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "0f1a2b3c-0001-4000-8000-000000000007",
+      "name": "Skipped",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Invoice Received": {
+      "main": [
+        [
+          {
+            "node": "Normalise Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Invoice": {
+      "main": [
+        [
+          {
+            "node": "Amount Over Threshold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Amount Over Threshold": {
+      "main": [
+        [
+          {
+            "node": "Post To Accounting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record As Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post To Accounting": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record As Skipped": {
+      "main": [
+        [
+          {
+            "node": "Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "0f1a2b3c-0001-4000-8000-00000000beef",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
