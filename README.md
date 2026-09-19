@@ -650,4 +650,17 @@ SOFTWARE.
 
 ---
 
+<!-- RELATED:START -->
+
+## Related tools
+
+- **[incident-severity-lint](https://github.com/duke5am/incident-severity-lint)** — Classify incident severity from user impact instead of gut feeling, and lint the incident record for the questions a postmortem has to answer.
+  *(if you were searching for "incident severity matrix")*
+
+All 28 tools in this set, grouped by what they check: **[dev-tools-index](https://duke5am.github.io/dev-tools-index/)**
+
+If you arrived here searching for one of these, this is the tool: **n8n workflow not running** · **n8n dead branch** · **n8n broken connection export** · **validate n8n workflow json**
+
+<!-- RELATED:END -->
+
 → **[n8n Workflow Automation Pack](https://duke5am.gumroad.com/l/06-n8n-automation-pack)** — $29 on Gumroad <!-- GUMROAD-LINK -->
