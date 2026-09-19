@@ -1,5 +1,4 @@
-# n8n-workflow-lint
-
+# n8n-dead-branch-lint
 A **static** linter for exported n8n workflow JSON. Point it at a workflow
 export and it tells you which mistakes will break the automation in
 production, why each one matters, and how to fix it.
