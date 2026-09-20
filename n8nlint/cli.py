@@ -41,7 +41,9 @@ _JSON_SUFFIXES = (".json",)
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="n8n_workflow_lint.py",
+        # No hard-coded prog: usage and error messages then name the command
+        # the user actually ran -- "n8n_workflow_lint.py" from a clone,
+        # "n8n-dead-branch-lint" from the installed console script.
         description=(
             "Static linter for exported n8n workflow JSON. Reads an export and "
             "reports the mistakes that break automations in production. It "
@@ -134,7 +136,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not args.paths:
         parser.print_usage(sys.stderr)
         sys.stderr.write(
-            "n8n_workflow_lint.py: error: give me at least one file or "
+            f"{parser.prog}: error: give me at least one file or "
             "directory (or use --list-rules)\n"
         )
         return EXIT_USAGE
@@ -142,7 +144,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     explicit, discovered, problems = _collect_inputs(args.paths)
     if problems and not explicit and not discovered:
         for problem in problems:
-            sys.stderr.write(f"n8n_workflow_lint.py: error: {problem}\n")
+            sys.stderr.write(f"{parser.prog}: error: {problem}\n")
         return EXIT_USAGE
 
     all_findings: list[Finding] = []
@@ -196,10 +198,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.quiet:
             for error in errors:
-                sys.stderr.write(f"n8n_workflow_lint.py: error: {error['error']}\n")
+                sys.stderr.write(f"{parser.prog}: error: {error['error']}\n")
         else:
             for error in errors:
-                sys.stderr.write(f"n8n_workflow_lint.py: error: {error['error']}\n")
+                sys.stderr.write(f"{parser.prog}: error: {error['error']}\n")
             sys.stdout.write("(run failed before linting completed)\n")
         return EXIT_USAGE
 

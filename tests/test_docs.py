@@ -30,7 +30,13 @@ from helpers import (  # noqa: E402
 LICENSE = os.path.join(ROOT, "LICENSE")
 
 #: The one line the README must end with, byte for byte.
-FUNNEL_LINE = "\u2192 **n8n Workflow Automation Pack**: <!-- GUMROAD-LINK -->"
+#: The placeholder was filled in with the live Gumroad URL in "Link the paid
+#: toolkit from the README"; this constant still held the placeholder, so the
+#: suite had been failing since that commit. The assertion is unchanged: the
+#: last line must be exactly this, once, with no trailing whitespace.
+FUNNEL_LINE = ("\u2192 **[n8n Workflow Automation Pack]"
+               "(https://duke5am.gumroad.com/l/06-n8n-automation-pack)**"
+               " \u2014 $29 on Gumroad <!-- GUMROAD-LINK -->")
 
 
 class TestReadme(unittest.TestCase):

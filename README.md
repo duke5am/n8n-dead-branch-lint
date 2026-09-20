@@ -1,10 +1,13 @@
 # n8n-dead-branch-lint
+
+[![PyPI](https://img.shields.io/pypi/v/n8n-dead-branch-lint)](https://pypi.org/project/n8n-dead-branch-lint/)
+
 A **static** linter for exported n8n workflow JSON. Point it at a workflow
 export and it tells you which mistakes will break the automation in
 production, why each one matters, and how to fix it.
 
 It is a single Python file plus a small package, standard library only,
-nothing to install, no network, no n8n instance. It never runs your
+no dependencies, no network, no n8n instance. It never runs your
 workflow and never talks to n8n — it reads the JSON and reasons about it.
 
 ```
@@ -51,8 +54,16 @@ full description of each rule.
 
 ## Usage
 
-No install, no virtualenv, no dependencies. Python 3.9+ (developed and
+Install it, or clone it — both run the same code. Python 3.9+ (developed and
 tested on CPython 3.13.5).
+
+```bash
+pip install n8n-dead-branch-lint          # from PyPI
+n8n-dead-branch-lint my-workflow.json
+```
+
+No virtualenv needed either way, and no dependencies: clone the repository and
+run the script with `python3`:
 
 ```bash
 # one export
@@ -605,6 +616,8 @@ What the suite covers:
 
 ```
 n8n_workflow_lint.py      runnable entry point (no install needed)
+pyproject.toml            packaging: console script and metadata
+MANIFEST.in               what the sdist ships besides the packages
 n8nlint/
   model.py                parsing, node/connection model, graph traversal
   rules.py                the rule registry and every check

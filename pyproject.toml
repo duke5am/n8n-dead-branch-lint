@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "n8n-dead-branch-lint"
+version = "0.1.0"
+description = "Static linter for exported n8n workflow JSON: dead branches, broken connections and the mistakes that break automations in production."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "duke5am" }]
+keywords = [
+  "n8n", "workflow", "automation", "linter", "static-analysis", "json",
+  "dead-code", "low-code",
+]
+classifiers = [
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: System :: Systems Administration",
+]
+# Standard library only, on purpose: a linter for automations must not need an
+# installation step of its own.
+dependencies = []
+
+[project.scripts]
+n8n-dead-branch-lint = "n8nlint.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/duke5am/n8n-dead-branch-lint"
+Issues = "https://github.com/duke5am/n8n-dead-branch-lint/issues"
+
+[tool.setuptools]
+packages = ["n8nlint"]
+include-package-data = true
